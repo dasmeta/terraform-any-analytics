@@ -1,7 +1,7 @@
 variable "name" {
   type        = string
   default     = "redash"
-  description = "Prefix for Redash workload names and the ClusterIP Service name."
+  description = "Helm release name used to derive Redash component resource names."
 }
 
 variable "namespace" {
@@ -9,15 +9,15 @@ variable "namespace" {
   description = "Existing Kubernetes namespace where Redash is deployed."
 }
 
-variable "image" {
+variable "chart_version" {
   type        = string
-  default     = "redash/redash@sha256:c5c9148f5c389c9373224bde7053b4a1652fd696ee881dce00a064d21ccdcba8"
-  description = "Official immutable Redash v26.3.0 multi-architecture container image reference."
+  default     = "0.1.0"
+  description = "Released DasMeta Redash chart version."
 }
 
 variable "configuration_secret_name" {
   type        = string
-  description = "Existing Secret containing REDASH_DATABASE_URL, REDASH_REDIS_URL, REDASH_COOKIE_SECRET, and REDASH_SECRET_KEY keys."
+  description = "Existing Secret containing REDASH_DATABASE_URL, REDASH_REDIS_URL, REDASH_COOKIE_SECRET, and REDASH_SECRET_KEY."
 }
 
 variable "server_replicas" {

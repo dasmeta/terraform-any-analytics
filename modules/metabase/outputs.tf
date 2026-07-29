@@ -1,14 +1,19 @@
 output "service_name" {
-  value       = kubernetes_service_v1.this.metadata[0].name
-  description = "Name of the managed Metabase ClusterIP Service."
+  value       = var.name
+  description = "Metabase ClusterIP Service name."
 }
 
 output "service_port" {
-  value       = kubernetes_service_v1.this.spec[0].port[0].port
-  description = "HTTP port exposed by the managed Metabase ClusterIP Service."
+  value       = 3000
+  description = "Metabase ClusterIP Service HTTP port."
 }
 
 output "deployment_name" {
-  value       = kubernetes_deployment_v1.this.metadata[0].name
-  description = "Name of the managed Metabase Deployment."
+  value       = var.name
+  description = "Metabase Deployment name rendered by the component chart."
+}
+
+output "release_status" {
+  value       = helm_release.this.status
+  description = "Helm-reported Metabase release status."
 }

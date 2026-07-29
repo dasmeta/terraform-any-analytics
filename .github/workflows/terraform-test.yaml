@@ -9,6 +9,7 @@ jobs:
   terraform_validate:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         path:
           - modules/airbyte
@@ -17,9 +18,17 @@ jobs:
           - modules/metabase
           - modules/redash
     steps:
-      - uses: dasmeta/reusable-actions-workflows/terraform-test@main
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
         with:
-          aws-region: ${{ secrets.AWS_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          path: ${{ matrix.path }}
+          terraform_version: 1.15.8
+          terraform_wrapper: false
+
+      - name: Initialize Terraform
+        working-directory: ${{ matrix.path }}/tests/basic
+        run: terraform init -backend=false
+
+      - name: Validate Terraform
+        working-directory: ${{ matrix.path }}/tests/basic
+        run: terraform validate

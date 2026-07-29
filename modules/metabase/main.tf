@@ -1,160 +1,87 @@
 locals {
-  labels = {
-    "app.kubernetes.io/name"       = var.name
-    "app.kubernetes.io/component"  = "metabase"
-    "app.kubernetes.io/managed-by" = "terraform"
-  }
-}
-
-resource "kubernetes_deployment_v1" "this" {
-  metadata {
-    name      = var.name
-    namespace = var.namespace
-    labels    = local.labels
-  }
-
-  spec {
-    replicas = var.replicas
-
-    selector {
-      match_labels = local.labels
-    }
-
-    template {
-      metadata {
-        labels = local.labels
+  values = {
+    base = {
+      fullnameOverride = var.name
+      replicaCount     = var.replicas
+      envFrom = {
+        secret = var.application_database_secret_name
       }
-
-      spec {
-        automount_service_account_token = false
-        enable_service_links            = false
-        security_context {
-          fs_group        = 2000
-          run_as_user     = 2000
-          run_as_group    = 2000
-          run_as_non_root = true
+      extraEnv = {
+        MB_DB_TYPE = "postgres"
+      }
+      serviceAccount = {
+        create = false
+      }
+      podSecurityContext = {
+        fsGroup      = 2000
+        runAsUser    = 2000
+        runAsGroup   = 2000
+        runAsNonRoot = true
+      }
+      securityContext = {
+        allowPrivilegeEscalation = false
+        readOnlyRootFilesystem   = true
+        runAsUser                = 2000
+        runAsGroup               = 2000
+        runAsNonRoot             = true
+        capabilities = {
+          drop = ["ALL"]
         }
-        termination_grace_period_seconds = 120
-
-        container {
-          name  = "metabase"
-          image = var.image
-
-          image_pull_policy = "Always"
-          working_dir       = "/tmp"
-
-          port {
-            container_port = 3000
-            name           = "http"
-          }
-
-          env {
-            name  = "MB_DB_TYPE"
-            value = "postgres"
-          }
-
-          env {
-            name  = "MB_DB_CONNECTION_URI_FILE"
-            value = "/etc/metabase/database/connection-uri"
-          }
-
-          volume_mount {
-            name       = "runtime"
-            mount_path = "/tmp"
-          }
-
-          volume_mount {
-            name       = "application-database"
-            mount_path = "/etc/metabase/database"
-            read_only  = true
-          }
-
-          liveness_probe {
-            http_get {
-              path = "/api/health"
-              port = "http"
-            }
-
-            initial_delay_seconds = 120
-            period_seconds        = 30
-            timeout_seconds       = 5
-            failure_threshold     = 3
-          }
-
-          readiness_probe {
-            http_get {
-              path = "/api/health"
-              port = "http"
-            }
-
-            initial_delay_seconds = 30
-            period_seconds        = 10
-            timeout_seconds       = 5
-            failure_threshold     = 6
-          }
-
-          security_context {
-            allow_privilege_escalation = false
-            read_only_root_filesystem  = true
-            run_as_user                = 2000
-            run_as_group               = 2000
-            run_as_non_root            = true
-
-            capabilities {
-              drop = ["ALL"]
-            }
-          }
-
-          resources {
-            limits = {
-              cpu    = "1"
-              memory = "2Gi"
-            }
-            requests = {
-              cpu    = "250m"
-              memory = "512Mi"
-            }
-          }
+      }
+      workingDir = "/tmp"
+      volumes = [
+        {
+          name      = "runtime"
+          mountPath = "/tmp"
+          emptyDir  = {}
         }
-
-        volume {
-          name = "runtime"
-
-          empty_dir {}
+      ]
+      readinessProbe = {
+        httpGet = {
+          path = "/api/health"
+          port = "http"
         }
-
-        volume {
-          name = "application-database"
-
-          secret {
-            secret_name = var.application_database_secret_name
-
-            items {
-              key  = "MB_DB_CONNECTION_URI"
-              path = "connection-uri"
-            }
-          }
+        initialDelaySeconds = 30
+        periodSeconds       = 10
+        timeoutSeconds      = 5
+        failureThreshold    = 6
+      }
+      livenessProbe = {
+        httpGet = {
+          path = "/api/health"
+          port = "http"
+        }
+        initialDelaySeconds = 120
+        periodSeconds       = 30
+        timeoutSeconds      = 5
+        failureThreshold    = 3
+      }
+      resources = {
+        requests = {
+          cpu    = "250m"
+          memory = "512Mi"
+        }
+        limits = {
+          cpu    = "1"
+          memory = "2Gi"
         }
       }
     }
   }
 }
 
-resource "kubernetes_service_v1" "this" {
-  metadata {
-    name      = var.name
-    namespace = var.namespace
-    labels    = local.labels
-  }
+resource "helm_release" "this" {
+  name             = var.name
+  repository       = "https://dasmeta.github.io/helm"
+  chart            = "metabase"
+  version          = var.chart_version
+  namespace        = var.namespace
+  create_namespace = false
 
-  spec {
-    type     = "ClusterIP"
-    selector = local.labels
+  atomic          = true
+  cleanup_on_fail = true
+  wait            = true
+  timeout         = 900
 
-    port {
-      name        = "http"
-      port        = 3000
-      target_port = "http"
-    }
-  }
+  values = [yamlencode(local.values)]
 }

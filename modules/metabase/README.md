@@ -1,9 +1,8 @@
 # Metabase Terraform Module
 
 Deploys Metabase Open Source as the analytics platform's default visualization
-provider. The module creates a hardened Kubernetes Deployment and private
-ClusterIP Service; it uses an external PostgreSQL application database rather
-than Metabase's embedded H2 database.
+provider through the released DasMeta `metabase` Helm chart. It uses an external
+PostgreSQL application database rather than Metabase's embedded H2 database.
 
 ## Prerequisites
 
@@ -15,12 +14,10 @@ The Secret must provide this key:
 
 - `MB_DB_CONNECTION_URI`: a complete PostgreSQL JDBC connection URI
 
-The module mounts this value as a file and sets Metabase's documented
-`MB_DB_CONNECTION_URI_FILE` variable; it does not inject database credentials
-into the pod environment. `MB_DB_TYPE=postgres` is set by the module. Metabase
-owns its own application-database schema migrations. The database itself,
-user/grants, and Secret are owned by the platform database/secrets composition
-layer.
+The released chart injects this Secret as runtime environment variables and the
+module sets `MB_DB_TYPE=postgres`. Metabase owns its own application-database
+schema migrations. The database itself, user/grants, and Secret are owned by the
+platform database/secrets composition layer.
 
 ## Usage
 
@@ -33,7 +30,8 @@ module "metabase" {
 }
 ```
 
-The module exposes Metabase only through a ClusterIP Service on port 3000.
+The module exposes Metabase only through a ClusterIP Service on port 3000. The
+chart version is explicit through `chart_version`.
 Gateway/ingress, TLS, and Authentik forward-auth are configured outside this
 module. Native Metabase initial setup, data-source registration, collections,
 and dashboards are data-product content and are also out of scope.
@@ -48,13 +46,13 @@ documented upgrade procedure.
 | Name | Version |
 | ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.3 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | ~> 2.0 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 3.0 |
 
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | ~> 2.0 |
+| <a name="provider_helm"></a> [helm](#provider\_helm) | ~> 3.0 |
 
 ## Modules
 
@@ -64,16 +62,15 @@ No modules.
 
 | Name | Type |
 | ---- | ---- |
-| [kubernetes_deployment_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/deployment_v1) | resource |
-| [kubernetes_service_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_v1) | resource |
+| [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_application_database_secret_name"></a> [application\_database\_secret\_name](#input\_application\_database\_secret\_name) | Existing Secret containing the MB\_DB\_CONNECTION\_URI key for Metabase's external PostgreSQL application database. | `string` | n/a | yes |
-| <a name="input_image"></a> [image](#input\_image) | Official immutable Metabase Open Source v0.63.1.12 container image reference. | `string` | `"metabase/metabase@sha256:a6e4100e913165ab2f2d5ac36bc1a2f63edd0ff5b2292e7a10642351598e1de7"` | no |
-| <a name="input_name"></a> [name](#input\_name) | Deployment and ClusterIP Service name. | `string` | `"metabase"` | no |
+| <a name="input_application_database_secret_name"></a> [application\_database\_secret\_name](#input\_application\_database\_secret\_name) | Existing Secret containing the MB\_DB\_CONNECTION\_URI value for Metabase's external PostgreSQL application database. | `string` | n/a | yes |
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Released DasMeta Metabase chart version. | `string` | `"0.1.0"` | no |
+| <a name="input_name"></a> [name](#input\_name) | Helm release, Deployment, and ClusterIP Service name. | `string` | `"metabase"` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Existing Kubernetes namespace where Metabase is deployed. | `string` | n/a | yes |
 | <a name="input_replicas"></a> [replicas](#input\_replicas) | Number of Metabase replicas; retain one replica during application database migrations. | `number` | `1` | no |
 
@@ -81,7 +78,8 @@ No modules.
 
 | Name | Description |
 | ---- | ----------- |
-| <a name="output_deployment_name"></a> [deployment\_name](#output\_deployment\_name) | Name of the managed Metabase Deployment. |
-| <a name="output_service_name"></a> [service\_name](#output\_service\_name) | Name of the managed Metabase ClusterIP Service. |
-| <a name="output_service_port"></a> [service\_port](#output\_service\_port) | HTTP port exposed by the managed Metabase ClusterIP Service. |
+| <a name="output_deployment_name"></a> [deployment\_name](#output\_deployment\_name) | Metabase Deployment name rendered by the component chart. |
+| <a name="output_release_status"></a> [release\_status](#output\_release\_status) | Helm-reported Metabase release status. |
+| <a name="output_service_name"></a> [service\_name](#output\_service\_name) | Metabase ClusterIP Service name. |
+| <a name="output_service_port"></a> [service\_port](#output\_service\_port) | Metabase ClusterIP Service HTTP port. |
 <!-- END_TF_DOCS -->

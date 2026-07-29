@@ -1,7 +1,7 @@
 variable "name" {
   type        = string
   default     = "metabase"
-  description = "Deployment and ClusterIP Service name."
+  description = "Helm release, Deployment, and ClusterIP Service name."
 }
 
 variable "namespace" {
@@ -9,15 +9,15 @@ variable "namespace" {
   description = "Existing Kubernetes namespace where Metabase is deployed."
 }
 
-variable "image" {
+variable "chart_version" {
   type        = string
-  default     = "metabase/metabase@sha256:a6e4100e913165ab2f2d5ac36bc1a2f63edd0ff5b2292e7a10642351598e1de7"
-  description = "Official immutable Metabase Open Source v0.63.1.12 container image reference."
+  default     = "0.1.0"
+  description = "Released DasMeta Metabase chart version."
 }
 
 variable "application_database_secret_name" {
   type        = string
-  description = "Existing Secret containing the MB_DB_CONNECTION_URI key for Metabase's external PostgreSQL application database."
+  description = "Existing Secret containing the MB_DB_CONNECTION_URI value for Metabase's external PostgreSQL application database."
 }
 
 variable "replicas" {

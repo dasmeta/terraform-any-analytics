@@ -1,14 +1,14 @@
 output "service_name" {
-  value       = kubernetes_service_v1.this.metadata[0].name
-  description = "Internal PostgREST ClusterIP Service name."
-}
-
-output "service_namespace" {
-  value       = kubernetes_service_v1.this.metadata[0].namespace
-  description = "Namespace of the PostgREST Service."
+  value       = var.name
+  description = "PostgREST ClusterIP Service name."
 }
 
 output "service_port" {
   value       = 3000
-  description = "Internal PostgREST HTTP Service port."
+  description = "PostgREST ClusterIP Service HTTP port."
+}
+
+output "release_status" {
+  value       = helm_release.this.status
+  description = "Helm-reported PostgREST release status."
 }

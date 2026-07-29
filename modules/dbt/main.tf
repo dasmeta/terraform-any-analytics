@@ -1,56 +1,59 @@
-resource "kubernetes_cron_job_v1" "this" {
-  metadata {
-    name      = var.name
-    namespace = var.namespace
-    labels = {
-      "app.kubernetes.io/component"  = "dbt-runner"
-      "app.kubernetes.io/managed-by" = "terraform"
-    }
-  }
-
-  spec {
-    schedule                      = var.schedule
-    suspend                       = var.suspend
-    concurrency_policy            = "Forbid"
-    failed_jobs_history_limit     = 1
-    successful_jobs_history_limit = 3
-
-    job_template {
-      metadata {
-        labels = {
-          "app.kubernetes.io/component" = "dbt-runner"
+locals {
+  values = {
+    jobs = [
+      {
+        name                       = var.name
+        schedule                   = var.schedule
+        command                    = var.command
+        restartPolicy              = "Never"
+        concurrencyPolicy          = "Forbid"
+        successfulJobsHistoryLimit = 3
+        failedJobsHistoryLimit     = 1
+        jobBackoffLimit            = 1
+        suspend                    = var.suspend
+        imagePullPolicy            = var.image.pull_policy
+        image = {
+          repository = var.image.repository
+          tag        = var.image.tag
         }
-      }
-
-      spec {
-        backoff_limit = 1
-
-        template {
-          metadata {
-            labels = {
-              "app.kubernetes.io/component" = "dbt-runner"
+        secrets = [
+          for key in var.configuration_secret_keys : {
+            (key) = {
+              from = var.configuration_secret_name
+              key  = key
             }
           }
-
-          spec {
-            automount_service_account_token = false
-            enable_service_links            = false
-            restart_policy                  = "Never"
-
-            container {
-              name    = "dbt"
-              image   = var.image
-              command = var.command
-
-              env_from {
-                secret_ref {
-                  name = var.configuration_secret_name
-                }
-              }
-            }
+        ]
+        serviceAccount = {
+          create = false
+        }
+        resources = {
+          requests = {
+            cpu    = "100m"
+            memory = "256Mi"
+          }
+          limits = {
+            cpu    = "500m"
+            memory = "1Gi"
           }
         }
       }
-    }
+    ]
   }
+}
+
+resource "helm_release" "this" {
+  name             = var.name
+  repository       = "https://dasmeta.github.io/helm"
+  chart            = "base-cronjob"
+  version          = var.chart_version
+  namespace        = var.namespace
+  create_namespace = false
+
+  atomic          = true
+  cleanup_on_fail = true
+  wait            = true
+  timeout         = 900
+
+  values = [yamlencode(local.values)]
 }

@@ -14,6 +14,7 @@ jobs:
           - modules/airbyte
           - modules/dbt
           - modules/postgrest
+          - modules/metabase
     steps:
       - uses: dasmeta/reusable-actions-workflows/terraform-test@main
         with:

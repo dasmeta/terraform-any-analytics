@@ -1,5 +1,12 @@
 locals {
+  redash_image = {
+    repository = "redash/redash"
+    tag        = "26.3.0@sha256:c5c9148f5c389c9373224bde7053b4a1652fd696ee881dce00a064d21ccdcba8"
+    pullPolicy = "IfNotPresent"
+  }
+
   common_component_values = {
+    image = local.redash_image
     envFrom = {
       secret = var.configuration_secret_name
     }
@@ -39,13 +46,9 @@ locals {
       replicaCount = var.server_replicas
       initContainers = [
         {
-          name = "create-database"
-          image = {
-            repository = "redash/redash"
-            tag        = "26.3.0"
-            pullPolicy = "Always"
-          }
-          args = ["create_db"]
+          name  = "create-database"
+          image = local.redash_image
+          args  = ["create_db"]
           envFrom = [
             {
               secretRef = {

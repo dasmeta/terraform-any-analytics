@@ -1,0 +1,13 @@
+# Copy into a customer IaC repository and replace the version with a release.
+source: dasmeta/analytics/any//modules/airbyte
+version: "<released-module-version>"
+variables:
+  namespace: example-analytics
+  database:
+    host: postgresql.example.internal
+    name: airbyte
+    secret_name: airbyte-database
+  storage:
+    bucket: example-airbyte
+    region: example-region-1
+    secret_name: airbyte-storage

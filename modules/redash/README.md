@@ -20,11 +20,17 @@ keys:
 The released chart injects the Secret into each native Redash process.
 Terraform never receives its values.
 
+The module pins every Redash runtime, including the database initializer, to the
+reviewed multi-architecture image digest for the chart's `26.3.0` release.
+
 The server init container runs Redash's native `create_db` command. It owns
 Redash schema creation; it does not create a PostgreSQL database, user, grant,
 Redis instance, or Kubernetes Secret.
 
 ## Usage
+
+The equivalent YAML IaC DSL reference is
+[examples/yaml/redash.yaml](../../examples/yaml/redash.yaml).
 
 ```hcl
 module "redash" {

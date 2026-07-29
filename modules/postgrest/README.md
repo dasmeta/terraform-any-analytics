@@ -17,6 +17,9 @@ ingress, DNS, Authentik proxy policy, and Galust access separately using
 
 ## Usage
 
+The equivalent YAML IaC DSL reference is
+[examples/yaml/postgrest.yaml](../../examples/yaml/postgrest.yaml).
+
 ```hcl
 module "postgrest" {
   source = "dasmeta/analytics/any//modules/postgrest"

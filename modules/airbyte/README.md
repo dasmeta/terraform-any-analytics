@@ -27,6 +27,9 @@ IdP support requires a separate, officially supported module extension.
 
 ## Usage
 
+The equivalent YAML IaC DSL reference is
+[examples/yaml/airbyte.yaml](../../examples/yaml/airbyte.yaml).
+
 ```hcl
 module "airbyte" {
   source = "dasmeta/analytics/any//modules/airbyte"

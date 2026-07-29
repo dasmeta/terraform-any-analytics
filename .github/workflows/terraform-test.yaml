@@ -13,6 +13,7 @@ jobs:
         path:
           - modules/airbyte
           - modules/dbt
+          - modules/postgrest
     steps:
       - uses: dasmeta/reusable-actions-workflows/terraform-test@main
         with:

@@ -8,4 +8,4 @@
 - [x] T006 Update examples, tests, documentation, and outputs for every affected module.
 - [x] T007 Run formatting, Terraform validation, chart rendering, and publish the corrective branch. Validated with Terraform v1.15.8 and Helm provider v3.2.0 on darwin arm64.
 - [x] T008 Address PR feedback and add YAML IaC DSL examples.
-- [ ] T009 Replace the AWS-dependent shared CI action with provider-independent Terraform validation and verify the PR checks.
+- [x] T009 Replace the AWS-dependent shared CI action with provider-independent Terraform validation and verify the PR checks. All five module validations and GitGuardian passed on GitHub Actions run 30461932853.

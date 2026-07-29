@@ -31,6 +31,7 @@ Airbyte already uses a maintained upstream Helm chart, so no workload correction
 - Preserve Airbyte as-is and validate it with the same Helm-provider convention.
 - Add component YAML IaC DSL examples using the established `source`, `version`, and `variables` structure. The customer IaC repository supplies the Helm provider context and chooses the released Terraform module version.
 - Run `terraform fmt -check -recursive`, `terraform init -backend=false` and `terraform validate` for each basic test, and `helm template` for the four chart value payloads where practical.
+- Run the same provider-independent validation in GitHub Actions with Terraform v1.15.8. The repository's legacy shared Terraform test action configures AWS credentials unconditionally and therefore cannot validate these Helm-only fixtures; it is replaced here with the equivalent checkout, setup, init, and validate steps. The validation matrix must not fail fast so all component results remain visible.
 
 ## Gates
 
@@ -38,3 +39,4 @@ Airbyte already uses a maintained upstream Helm chart, so no workload correction
 - No interface-widening or published breaking-change approval is required: unpublished direct-resource branches are superseded by the explicitly requested Helm-only architecture.
 - No CloudBrowser update is proposed; this is reusable catalog work with no resolved customer context.
 - PR feedback requires three bounded corrections: make Terraform validation gating, pin all Redash runtime and initializer images by digest, and validate Redash release names before deriving service outputs.
+- The first CI run at commit `25e728b` failed before Terraform executed because the legacy shared action's AWS credential setup received an invalid token. This is infrastructure-independent module validation, not a module failure; the workflow is corrected without adding an AWS dependency.

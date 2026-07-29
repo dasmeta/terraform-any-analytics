@@ -29,6 +29,7 @@ Airbyte already uses a maintained upstream Helm chart, so no workload correction
 - Replace `main.tf`, `outputs.tf`, `versions.tf`, basic examples, and basic test providers for dbt, Metabase, PostgREST, and Redash.
 - Update their READMEs to describe released chart versions, Secret contracts, and release-derived service names.
 - Preserve Airbyte as-is and validate it with the same Helm-provider convention.
+- Add component YAML IaC DSL examples using the established `source`, `version`, and `variables` structure. The customer IaC repository supplies the Helm provider context and chooses the released Terraform module version.
 - Run `terraform fmt -check -recursive`, `terraform init -backend=false` and `terraform validate` for each basic test, and `helm template` for the four chart value payloads where practical.
 
 ## Gates
@@ -36,3 +37,4 @@ Airbyte already uses a maintained upstream Helm chart, so no workload correction
 - Speckit evidence: `spec.md`, `plan.md`, and `tasks.md` are present under this feature package.
 - No interface-widening or published breaking-change approval is required: unpublished direct-resource branches are superseded by the explicitly requested Helm-only architecture.
 - No CloudBrowser update is proposed; this is reusable catalog work with no resolved customer context.
+- PR feedback requires three bounded corrections: make Terraform validation gating, pin all Redash runtime and initializer images by digest, and validate Redash release names before deriving service outputs.

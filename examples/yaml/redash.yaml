@@ -1,0 +1,7 @@
+# Copy into a customer IaC repository and replace the version with a release.
+source: dasmeta/analytics/any//modules/redash
+version: "<released-module-version>"
+variables:
+  name: example-redash
+  namespace: example-analytics
+  configuration_secret_name: redash-configuration

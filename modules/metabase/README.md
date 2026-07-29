@@ -21,6 +21,9 @@ platform database/secrets composition layer.
 
 ## Usage
 
+The equivalent YAML IaC DSL reference is
+[examples/yaml/metabase.yaml](../../examples/yaml/metabase.yaml).
+
 ```hcl
 module "metabase" {
   source = "dasmeta/analytics/any//modules/metabase"

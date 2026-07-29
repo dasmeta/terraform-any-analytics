@@ -2,6 +2,11 @@ variable "name" {
   type        = string
   default     = "redash"
   description = "Helm release name used to derive Redash component resource names."
+
+  validation {
+    condition     = length(var.name) <= 49 && can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", var.name))
+    error_message = "name must be a lowercase DNS label of 49 characters or fewer so the derived Redash server Service name is valid."
+  }
 }
 
 variable "namespace" {

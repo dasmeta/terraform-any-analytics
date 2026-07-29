@@ -1,0 +1,6 @@
+# Copy into a customer IaC repository and replace the version with a release.
+source: dasmeta/analytics/any//modules/metabase
+version: "<released-module-version>"
+variables:
+  namespace: example-analytics
+  application_database_secret_name: metabase-application-database

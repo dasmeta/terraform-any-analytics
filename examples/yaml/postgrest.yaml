@@ -1,0 +1,6 @@
+# Copy into a customer IaC repository and replace the version with a release.
+source: dasmeta/analytics/any//modules/postgrest
+version: "<released-module-version>"
+variables:
+  namespace: example-analytics
+  configuration_secret_name: postgrest-configuration

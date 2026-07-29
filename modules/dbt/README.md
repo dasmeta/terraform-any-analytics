@@ -19,6 +19,9 @@ database resources.
 
 ## Usage
 
+The equivalent YAML IaC DSL reference is
+[examples/yaml/dbt.yaml](../../examples/yaml/dbt.yaml).
+
 ```hcl
 module "dbt" {
   source = "dasmeta/analytics/any//modules/dbt"

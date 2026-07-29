@@ -15,6 +15,7 @@ jobs:
           - modules/dbt
           - modules/postgrest
           - modules/metabase
+          - modules/redash
     steps:
       - uses: dasmeta/reusable-actions-workflows/terraform-test@main
         with:

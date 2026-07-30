@@ -1,7 +1,7 @@
 # Copy into a customer IaC repository and replace the version with a release.
 # The caller provisions namespace, databases, grants, storage, Redis, and
 # Secrets separately, then passes their non-secret references here.
-source: dasmeta/analytics/any//modules/platform
+source: dasmeta/analytics/any
 version: "<released-platform-version>"
 variables:
   namespace: example-analytics

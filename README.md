@@ -10,8 +10,10 @@
 
 # terraform-any-analytics
 
-Terraform modules that install selected analytics-platform runtimes into an
-existing Kubernetes namespace using version-pinned Helm charts.
+The Terraform root module composes a selected analytics-platform runtime suite
+into an existing Kubernetes namespace using version-pinned Helm charts. The
+individual runtime modules remain available below `modules/` when independent
+state or release cadence is required.
 
 **Current delivery state (verified 2026-07-30):** component modules were
 released as `v1.0.0`. The platform composition module introduced after that
@@ -30,7 +32,7 @@ release cadence.
 
 | Module | Use it for | Runtime dependency owned outside this module |
 | --- | --- | --- |
-| [Platform](./modules/platform/) | opinionated composition of selected analytics runtimes | namespace, Authentik, databases/users/grants, buckets, Redis, Secrets, ingress, DNS, and tenant content |
+| [Platform root](./) | opinionated composition of selected analytics runtimes | namespace, Authentik, databases/users/grants, buckets, Redis, Secrets, ingress, DNS, and tenant content |
 | [Airbyte](./modules/airbyte/) | ingesting data with the official Airbyte Helm chart | PostgreSQL, S3 bucket, and database/storage Secrets |
 | [dbt](./modules/dbt/) | scheduling a data-product-owned dbt image | configuration Secret and the image's dbt project and warehouse access |
 | [PostgREST](./modules/postgrest/) | exposing a prepared PostgreSQL schema as an internal API | database roles, grants, API schema/views/functions, and `PGRST_*` Secret |
@@ -61,6 +63,56 @@ contracts:
 Terraform receives Secret names and key names only. It does not create or store
 credential values.
 
+## Platform root usage
+
+The repository root is the standard one-entry-point module. It composes
+optional Airbyte, dbt, and PostgREST runtimes, plus exactly one visualization
+provider.
+
+```hcl
+module "analytics_platform" {
+  source = "dasmeta/analytics/any"
+
+  namespace = module.analytics_namespace.name
+
+  airbyte = {
+    database = {
+      host        = "postgresql.example.internal"
+      name        = "airbyte"
+      secret_name = "airbyte-database"
+    }
+    storage = {
+      bucket      = "example-airbyte"
+      region      = "example-region-1"
+      secret_name = "airbyte-storage"
+    }
+  }
+
+  postgrest = {
+    configuration_secret_name = "postgrest-configuration"
+  }
+
+  visualization = {
+    # provider defaults to metabase
+    metabase = {
+      application_database_secret_name = "metabase-application-database"
+    }
+  }
+}
+```
+
+`airbyte`, `dbt`, `postgrest`, and `visualization` are optional. Omit a
+component or set it to `null` to exclude it. When `visualization` is present,
+Metabase is the default provider; set `provider = "redash"` with only a
+`redash` configuration to select Redash. The root rejects unknown, missing, or
+ambiguous visualization selections.
+
+The root accepts no generic Helm-values escape hatch. Namespace, Authentik,
+database infrastructure, database users/grants, buckets, Redis, Secrets,
+Gateway/ingress, DNS, TLS, and tenant data-product content remain in their
+respective owners and are passed here only through documented non-secret
+references.
+
 ## How do I evaluate a module before a release is published?
 
 The repository's verified local check validates each basic module fixture
@@ -69,7 +121,7 @@ without a Kubernetes cluster or backend:
 ```sh
 terraform fmt -check -recursive
 
-for module in modules/airbyte modules/dbt modules/postgrest modules/metabase modules/redash modules/platform; do
+for module in . modules/airbyte modules/dbt modules/postgrest modules/metabase modules/redash; do
   terraform -chdir="$module/tests/basic" init -backend=false
   terraform -chdir="$module/tests/basic" validate
 done
@@ -81,7 +133,7 @@ contracts; it does not install a chart or prove that caller-managed runtime
 dependencies exist.
 
 For the standard suite, start with the [platform basic
-example](./modules/platform/examples/basic/) and read its README. For a
+example](./examples/basic/). For a
 component-specific configuration, start with its [basic
 example](./modules/airbyte/examples/basic/). All examples expect
 caller-managed prerequisites and do not contain production credentials.
@@ -120,7 +172,7 @@ Use the owning platform layer or the native application for those concerns.
 | Question | Canonical location |
 | --- | --- |
 | Repository purpose, module selection, boundaries, and validated entry point | this README |
-| Standard suite interface and selected component endpoints | [platform module README](./modules/platform/) |
+| Standard suite interface and selected component endpoints | this README |
 | Component inputs, outputs, chart versions, operational notes, and service names | the relevant [component README](./modules/) |
 | Terraform configuration shape | each module's [basic example](./modules/airbyte/examples/basic/) |
 | Customer IaC DSL shape | [YAML examples](./examples/yaml/) |
@@ -131,6 +183,51 @@ This repository currently has no published `CONTRIBUTING.md`, `SECURITY.md`,
 `SUPPORT.md`, or `CHANGELOG.md`. Repository-owner confirmation is required
 before claiming a contribution process, security-reporting route, support SLA,
 or release-versioning policy.
+
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+| ---- | ------- |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.3 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | ~> 3.0 |
+
+## Providers
+
+No providers.
+
+## Modules
+
+| Name | Source | Version |
+| ---- | ------ | ------- |
+| <a name="module_airbyte"></a> [airbyte](#module\_airbyte) | ./modules/airbyte | n/a |
+| <a name="module_dbt"></a> [dbt](#module\_dbt) | ./modules/dbt | n/a |
+| <a name="module_metabase"></a> [metabase](#module\_metabase) | ./modules/metabase | n/a |
+| <a name="module_postgrest"></a> [postgrest](#module\_postgrest) | ./modules/postgrest | n/a |
+| <a name="module_redash"></a> [redash](#module\_redash) | ./modules/redash | n/a |
+
+## Resources
+
+No resources.
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+| ---- | ----------- | ---- | ------- | :------: |
+| <a name="input_airbyte"></a> [airbyte](#input\_airbyte) | Optional Airbyte runtime configuration. Null omits Airbyte from the platform. | <pre>object({<br/>    name          = optional(string, "airbyte") # Helm release name and Airbyte resource prefix.<br/>    chart_version = optional(string, "1.9.2")   # Reviewed official Airbyte chart version.<br/>    database = object({<br/>      host                = string                       # External PostgreSQL hostname or service name.<br/>      name                = string                       # Existing PostgreSQL database name.<br/>      port                = optional(number, 5432)       # External PostgreSQL TCP port.<br/>      secret_name         = string                       # Existing Secret containing database credentials.<br/>      user_secret_key     = optional(string, "username") # Username key in database secret.<br/>      password_secret_key = optional(string, "password") # Password key in database secret.<br/>    })<br/>    storage = object({<br/>      bucket                       = string                                   # Existing S3 bucket for Airbyte storage classes.<br/>      region                       = string                                   # AWS region containing the bucket.<br/>      secret_name                  = string                                   # Existing Secret containing S3 credentials.<br/>      access_key_id_secret_key     = optional(string, "s3-access-key-id")     # Access-key ID key in storage secret.<br/>      secret_access_key_secret_key = optional(string, "s3-secret-access-key") # Secret-access-key key in storage secret.<br/>    })<br/>  })</pre> | `null` | no |
+| <a name="input_dbt"></a> [dbt](#input\_dbt) | Optional dbt runner configuration. Null omits dbt from the platform. | <pre>object({<br/>    name          = optional(string, "dbt-build") # Helm release and dbt CronJob name.<br/>    chart_version = optional(string, "0.1.39")    # Released DasMeta base-cronjob chart version.<br/>    image = object({<br/>      repository  = string                           # Data-product image repository, including registry when applicable.<br/>      tag         = string                           # Immutable data-product image tag.<br/>      pull_policy = optional(string, "IfNotPresent") # Kubernetes image pull policy.<br/>    })<br/>    command                   = list(string)          # Native dbt command and arguments.<br/>    schedule                  = string                # Kubernetes CronJob schedule.<br/>    configuration_secret_name = string                # Existing Secret injected as dbt environment variables.<br/>    configuration_secret_keys = list(string)          # Secret keys injected into the dbt container.<br/>    suspend                   = optional(bool, false) # Suspend future dbt runs while retaining the CronJob.<br/>  })</pre> | `null` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Existing Kubernetes namespace for all selected analytics runtimes. | `string` | n/a | yes |
+| <a name="input_postgrest"></a> [postgrest](#input\_postgrest) | Optional PostgREST runtime configuration. Null omits PostgREST from the platform. | <pre>object({<br/>    name                      = optional(string, "postgrest") # Helm release, Deployment, and Service name.<br/>    chart_version             = optional(string, "0.1.0")     # Released DasMeta PostgREST chart version.<br/>    configuration_secret_name = string                        # Existing Secret containing PGRST_* configuration.<br/>    replicas                  = optional(number, 1)           # Number of PostgREST replicas.<br/>  })</pre> | `null` | no |
+| <a name="input_visualization"></a> [visualization](#input\_visualization) | Optional visualization runtime. Metabase is the default provider when this object is configured. | <pre>object({<br/>    provider = optional(string, "metabase") # Visualization provider to deploy: metabase or redash.<br/>    metabase = optional(object({<br/>      name                             = optional(string, "metabase") # Helm release, Deployment, and Service name.<br/>      chart_version                    = optional(string, "0.1.0")    # Released DasMeta Metabase chart version.<br/>      application_database_secret_name = string                       # Existing Secret containing MB_DB_CONNECTION_URI.<br/>      replicas                         = optional(number, 1)          # Number of Metabase replicas.<br/>    }))<br/>    redash = optional(object({<br/>      name                      = optional(string, "redash") # Helm release name used for Redash resources.<br/>      chart_version             = optional(string, "0.1.0")  # Released DasMeta Redash chart version.<br/>      configuration_secret_name = string                     # Existing Secret containing required REDASH_* values.<br/>      server_replicas           = optional(number, 1)        # Number of Redash server replicas.<br/>    }))<br/>  })</pre> | `null` | no |
+
+## Outputs
+
+| Name | Description |
+| ---- | ----------- |
+| <a name="output_release_statuses"></a> [release\_statuses](#output\_release\_statuses) | Helm-reported release status for selected analytics runtimes. |
+| <a name="output_service_endpoints"></a> [service\_endpoints](#output\_service\_endpoints) | Internal HTTP service endpoints for selected long-running analytics runtimes. |
+| <a name="output_visualization_provider"></a> [visualization\_provider](#output\_visualization\_provider) | Selected visualization provider, or null when visualization is omitted. |
+<!-- END_TF_DOCS -->
 
 ---
 

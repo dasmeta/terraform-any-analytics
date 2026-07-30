@@ -13,7 +13,7 @@ already exist in the target namespace.
 
 | Component | YAML example | Terraform module |
 | --- | --- | --- |
-| Standard platform suite | [platform.yaml](./platform.yaml) | `modules/platform` |
+| Standard platform suite | [platform.yaml](./platform.yaml) | repository root |
 | Airbyte | [airbyte.yaml](./airbyte.yaml) | `modules/airbyte` |
 | dbt | [dbt.yaml](./dbt.yaml) | `modules/dbt` |
 | Metabase | [metabase.yaml](./metabase.yaml) | `modules/metabase` |

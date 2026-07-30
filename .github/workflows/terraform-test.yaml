@@ -6,7 +6,8 @@ on:
     branches: [main, master]
 
 jobs:
-  terraform_validate:
+  terraform-validate-modules:
+    name: Terraform module validation
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -32,3 +33,30 @@ jobs:
       - name: Validate Terraform
         working-directory: ${{ matrix.path }}/tests/basic
         run: terraform validate
+
+  # Temporary compatibility adapter for the centrally managed branch-protection
+  # contexts. Remove this when DMVP-10370 publishes the corrected workflow
+  # generator and this repository returns to generated CI.
+  terraform-validate:
+    name: terraform-validate
+    if: ${{ always() }}
+    needs: terraform-validate-modules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every module validation to pass
+        env:
+          VALIDATION_RESULT: ${{ needs.terraform-validate-modules.result }}
+        run: |
+          test "$VALIDATION_RESULT" = "success"
+
+  terraform-validate-root:
+    name: terraform-validate (/)
+    if: ${{ always() }}
+    needs: terraform-validate-modules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every module validation to pass
+        env:
+          VALIDATION_RESULT: ${{ needs.terraform-validate-modules.result }}
+        run: |
+          test "$VALIDATION_RESULT" = "success"

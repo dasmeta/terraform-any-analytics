@@ -66,7 +66,7 @@ does not create tenant dashboard content by default.
 
 ## Phase 6a: Standard platform composition
 
-- [x] T027 Create and validate `modules/platform` as a bounded composition of
+- [x] T027 Create and validate the repository root as a bounded composition of
   selected local analytics modules, with no shared-infrastructure ownership.
 - [x] T028 Add a canonical `platform.yaml` example while retaining independent
   component examples for separate-state consumers.

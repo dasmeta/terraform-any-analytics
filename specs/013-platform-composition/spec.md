@@ -7,17 +7,18 @@
 
 ## Module Context
 
-- **Target Module Path**: `modules/platform`
-- **Related Files in Scope**: composition module source, README, complete basic
-  example and test fixture, YAML example, repository README, CI module matrix,
-  and this feature package.
+- **Target Module Path**: repository root (`.`)
+- **Related Files in Scope**: root composition module source and README,
+  complete basic example and test fixture, YAML example, CI module matrix, and
+  this feature package.
 - **Scope**: a product-level root that composes released, local analytics
   runtime modules. It accepts an existing namespace string and the already
   created service contracts those runtimes need.
 - **Explicit exception**: the previous platform plan kept every component in a
-  separate root state. The approved product contract now requires one
-  platform-root module and one canonical YAML entry point. This module is the
-  bounded exception; it does not create or discover shared prerequisites.
+  separate root state. The approved product contract now requires this
+  repository root to be the platform module and one canonical YAML entry point.
+  The root is the bounded exception; it does not create or discover shared
+  prerequisites.
 - **Out of Scope**: cluster, namespace, Authentik, database instance,
   databases/users/grants, buckets, Redis, Secrets, ingress, DNS, TLS, tenant
   content, dashboards, Airbyte connections, dbt models, PostgREST schemas, or

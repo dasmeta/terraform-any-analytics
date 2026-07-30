@@ -5,7 +5,7 @@ locals {
 
 module "airbyte" {
   count  = var.airbyte == null ? 0 : 1
-  source = "../airbyte"
+  source = "./modules/airbyte"
 
   name          = var.airbyte.name
   namespace     = var.namespace
@@ -16,7 +16,7 @@ module "airbyte" {
 
 module "dbt" {
   count  = var.dbt == null ? 0 : 1
-  source = "../dbt"
+  source = "./modules/dbt"
 
   name                      = var.dbt.name
   namespace                 = var.namespace
@@ -31,7 +31,7 @@ module "dbt" {
 
 module "postgrest" {
   count  = var.postgrest == null ? 0 : 1
-  source = "../postgrest"
+  source = "./modules/postgrest"
 
   name                      = var.postgrest.name
   namespace                 = var.namespace
@@ -42,7 +42,7 @@ module "postgrest" {
 
 module "metabase" {
   count  = local.metabase_enabled ? 1 : 0
-  source = "../metabase"
+  source = "./modules/metabase"
 
   name                             = var.visualization.metabase.name
   namespace                        = var.namespace
@@ -53,7 +53,7 @@ module "metabase" {
 
 module "redash" {
   count  = local.redash_enabled ? 1 : 0
-  source = "../redash"
+  source = "./modules/redash"
 
   name                      = var.visualization.redash.name
   namespace                 = var.namespace

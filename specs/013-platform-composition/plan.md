@@ -5,7 +5,7 @@
 
 ## Summary
 
-Add `modules/platform`, an opinionated product-level Terraform root that
+Make this repository's Terraform root an opinionated product-level module that
 composes the existing Airbyte, dbt, PostgREST, and one selected visualization
 runtime. It does not own shared infrastructure: callers create namespace,
 Authentik, database, storage, Redis, and Secret prerequisites through their
@@ -30,11 +30,11 @@ state, shared module calls, and the decision to use this product composition.
 
 - **Terraform / provider constraints**: Terraform `~> 1.3`, HashiCorp Helm
   `~> 3.0`, matching repository convention.
-- **Target module**: `modules/platform` with `main.tf`, `variables.tf`,
-  `outputs.tf`, `versions.tf`, `README.md`, `examples/basic`, and `tests`.
-- **Composition baseline**: local `../airbyte`, `../dbt`, `../postgrest`,
-  `../metabase`, and `../redash` modules; configured Helm provider is inherited
-  from the caller.
+- **Target module**: repository root with `main.tf`, `variables.tf`,
+  `outputs.tf`, `versions.tf`, root `README.md`, `examples/basic`, and `tests`.
+- **Composition baseline**: local `./modules/airbyte`, `./modules/dbt`,
+  `./modules/postgrest`, `./modules/metabase`, and `./modules/redash` modules;
+  configured Helm provider is inherited from the caller.
 - **YAML**: `examples/yaml/platform.yaml` uses the established IaC DSL; actual
   customer configuration remains in its IaC config repository.
 - **Automation**: add the module to the existing Terraform validation matrix;
@@ -77,12 +77,12 @@ not applicable because this module contains only child modules and no resources.
 
 ## File Changes
 
-1. Add the platform module, typed selection validation, and endpoint/status
+1. Add the root platform module, typed selection validation, and endpoint/status
    outputs.
 2. Add neutral Terraform example and validation fixture, including an
    executable invalid-provider test.
-3. Generate module documentation and revise the repository README so it points
-   to the composition option while retaining component-level use cases.
+3. Generate root-module documentation in the repository README while retaining
+   component-level use cases.
 4. Add a complete generic `platform.yaml` example and register the module in
    validation CI.
 5. Update the existing 001 roadmap to mark completed components and replace

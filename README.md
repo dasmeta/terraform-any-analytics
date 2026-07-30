@@ -46,9 +46,10 @@ command and CronJob schedule provided to the module.
 
 ## What does this repository manage?
 
-Each module creates a `helm_release` and a private ClusterIP service or CronJob
-where its chart provides one. The caller provides the surrounding platform
-contracts:
+Each selected runtime child module creates its own `helm_release` and, where
+its chart provides one, a private ClusterIP service or CronJob. The composition
+root creates no direct Helm release or Kubernetes resource. The caller provides
+the surrounding platform contracts:
 
 1. Provision the namespace, databases, users, grants, storage, Redis, and
    Kubernetes Secrets through the platform's database and secrets layers.

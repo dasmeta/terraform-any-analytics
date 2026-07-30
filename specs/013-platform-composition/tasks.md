@@ -98,6 +98,27 @@ configuration repository and replace only release and prerequisite references.
 - [x] T018 Run Spec Kit feature, plan, task, and prerequisite scripts for
   `specs/013-platform-composition/`.
 
+## Phase 7: Workflow remediation
+
+**Purpose**: Correct the evidence and verification gaps found by the
+post-bootstrap module-developer audit without changing the public contract.
+
+- [x] T019 Record CloudBrowser read-only catalog evidence and the deferred
+  maintenance proposal in `specs/013-platform-composition/{plan,research}.md`.
+- [x] T020 Restrict the local Spec Kit constitution to repository-local rules
+  and point to shared governance in `.specify/memory/constitution.md`.
+- [x] T021 Complete the required source, capability, interface, gate, gap, and
+  proposed-file assessments in `specs/013-platform-composition/plan.md`.
+- [x] T022 Add Terraform release-package exclusions in `.terraformignore`.
+- [x] T023 Correct composition-root ownership wording in `README.md`.
+- [x] T024 Add default-provider, matching-configuration, selected-runtime, and
+  selected-only endpoint regression assertions in `tests/invalid_inputs.tftest.hcl`.
+- [x] T025 Run the Spec Kit cross-artifact reconciliation and record its review
+  findings in `specs/013-platform-composition/quickstart.md`.
+- [x] T026 Run formatting, Terraform validation/tests, Terraform docs, YAML
+  parsing, packaging checks, and diff checks; update
+  `specs/013-platform-composition/quickstart.md`.
+
 ## Dependencies and execution order
 
 - Setup establishes the workflow evidence.

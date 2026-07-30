@@ -67,18 +67,29 @@ are:
 
 **Current state and scope**: The repository already contains component-scoped
 Helm wrappers. This feature adds their root composition interface, root
-documentation, examples/tests, a YAML example, and root validation coverage.
+documentation, examples/tests, a YAML example, root validation coverage, and
+the release-package metadata required for Terraform distribution.
+
+**Gaps against internal standards (before remediation)**: the root had no
+`.terraformignore`; behavioral tests did not prove default Metabase selection,
+missing selected-provider configuration, selected-only endpoint output, or the
+complete selected runtime suite; README wording implied the composition root
+directly owns a Helm release; and the Spec Kit package omitted a formal
+retrospective workflow exemption and catalog evidence.
 
 **Repository convention**: Required providers remain in `versions.tf`; tests
 and examples remain under `tests/` and `examples/`. The root module is the
 user-approved exception to the prior component-only layout. It is documented
 as a composition root, not a new convention for runtime modules.
 
-**Upstream assessment**: The approved AWS, Azure, and Google provider module
-collections do not provide a vendor-neutral composition module for these
-Kubernetes analytics Helm runtimes. The local runtime modules are the intended
-opinionated wrappers; a direct-resource fallback and the scratch-template
-source are not applicable.
+**Target platform and upstream assessment**: The target is Kubernetes via the
+HashiCorp Helm provider, not AWS, Azure, or Google Cloud. The approved provider
+collections were considered and have no candidate for vendor-neutral composition
+of these analytics runtime charts; candidate set: none. The local runtime
+modules are the chosen wrapper baseline. Their added usability is reviewed,
+typed component configuration and chart-specific validation; the root adds only
+selection and cross-runtime output shaping. Direct-resource fallback and the
+scratch-template source are not applicable.
 
 **Wrapper preservation**: The root has a deliberately smaller interface than
 the child charts: it forwards only reviewed component configuration and
@@ -86,24 +97,47 @@ prevents generic Helm values. Grouped component objects are unambiguous;
 non-critical fields use Terraform `optional(...)` and every grouped field has
 an inline explanation in `variables.tf`.
 
-**Modern capabilities**: `supported`. This feature uses Terraform module
-composition and the established Helm provider path; it introduces no
-deprecated provider capability and does not change the child modules'
-provider support boundary.
+**Modern capabilities**: minimum Terraform is `~> 1.3`; minimum Helm provider
+is `~> 3.0`. Each net-new ability is `supported`: (1) local child-module
+composition uses Terraform `module` blocks and `count`; (2) optional grouped
+objects use Terraform `optional(...)`; (3) runtime installation remains the
+child modules' supported `helm_release` path. Primary evidence is HashiCorp's
+module-composition guidance and Helm provider/resource documentation. No child
+provider boundary changed and no deprecated capability or replacement applies.
 
-**Governance source**: Shared rules remain sourced from the DasMeta
-constitution repository. The local Spec Kit constitution records only this
-repository's composition and delivery constraints.
+**Governance source**: shared governance source is
+`https://github.com/dasmeta/meta-level-constitution`, observed at
+`349db1f2f52185f41ef6ec4fe366752ef9bf5743`. The local Spec Kit constitution
+contains repository-only constraints and must not duplicate shared policy.
 
-**CloudBrowser**: Conditional reusable-catalog work. No customer or catalog
-record is in scope and no authorized catalog mutation is proposed.
+**CloudBrowser**: Conditional reusable-catalog work; read-only evidence was
+reviewed. Existing module records are Metabase (ID 171, provider Kubernetes)
+and Redash (ID 129, provider Self Managed). No matching records were found for
+Airbyte, dbt, or PostgREST. The catalog has no confirmed module-to-repository
+identifier/version or documentation relation for this composition module.
+Proposed, but not authorized: create/complete those catalog records and relate
+them to the published module after release. No CloudBrowser mutation is part of
+this pull request.
 
-**Module-change gate**: Compatible after this package contains `spec.md`,
-`plan.md`, and `tasks.md` and the generated prerequisite check succeeds.
+**Module-change gate**: this is a retrospective bootstrap exception. Root
+module-impacting code existed before Spec Kit was initialized; the package now
+contains `spec.md`, `plan.md`, and `tasks.md`, and the prerequisite check
+succeeds. Review must accept this bounded exception; future module-impacting
+changes MUST start with the normal specify → clarify → plan → tasks sequence.
 
 **Interface/breaking change**: There is no prior root module contract to
 preserve. Existing component submodule interfaces remain unchanged. The root
 interface is intentionally narrow and does not widen any child module.
+
+**Proposed remediation files**: `.terraformignore`, `README.md`,
+`tests/invalid_inputs.tftest.hcl`, `.specify/memory/constitution.md`, and this
+feature package. No child runtime module source, variable, output, chart
+version, provider constraint, or customer IaC YAML changes are proposed.
+
+**Conflicts and approvals**: no breaking or interface-widening change is
+proposed. The user approved the root composition exception and this remediation
+scope. The only review decision remaining is acceptance of the time-bounded,
+retrospective Spec Kit bootstrap exception above.
 
 ## Constitution Check
 

@@ -1,66 +1,56 @@
-# Terraform Any Analytics Constitution
+<!--
+Sync Impact Report
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles:
+  - shared-policy restatement -> repository-local composition and packaging rules
+- Added sections:
+  - Shared Governance Source
+- Removed sections:
+  - duplicated shared delivery and review policy
+- Templates requiring updates:
+  - ✅ reviewed: .specify/templates/plan-template.md (existing Constitution Check remains applicable)
+  - ✅ reviewed: .specify/templates/spec-template.md (no repository-local schema change)
+  - ✅ reviewed: .specify/templates/tasks-template.md (no task format change)
+  - ✅ updated: specs/013-platform-composition/{plan,research,tasks,quickstart}.md
+- Follow-up TODOs:
+  - CloudBrowser catalog maintenance requires separate explicit confirmation after release.
+-->
 
-## Core Principles
+# Terraform Any Analytics Repository Constitution
 
-### I. Narrow, composable modules
+## Local Principles
 
-Each runtime module owns its Helm release and its runtime-specific validation.
-The repository root may compose released local runtime modules only; it does
-not become a general Helm-values pass-through or own shared infrastructure.
-The root composition role is an approved product exception for this repository.
+### I. Bounded composition root
 
-### II. Explicit ownership boundaries
+The repository root is the approved public composition module for the analytics
+runtime suite. Runtime wrappers remain in `modules/<runtime>` and own their
+own Helm release configuration. The root MUST NOT become a generic Helm-values
+pass-through.
 
-The caller owns cluster access, namespace creation, identity, database
-instances, database/user/grant provisioning, object storage, Redis, Secrets,
-ingress, DNS, TLS, and tenant data products. Modules consume references to
-those prerequisites and must never accept secret values.
+### II. Caller-owned prerequisites
 
-### III. Helm-native workload delivery
+This repository accepts only non-secret references to caller-created
+prerequisites. Namespace creation, identity, databases and grants, object
+storage, Redis, Secrets, ingress, DNS, TLS, and tenant data products remain
+outside this repository.
 
-Analytics runtimes are deployed through reviewed Helm charts and Helm provider
-resources. Direct Kubernetes resources require an explicit, documented
-exception when no suitable chart-based path exists.
+### III. Releaseable consumer contract
 
-### IV. Consumer contract evidence
+Any root-interface change MUST keep typed variables, README, Terraform and YAML
+examples, tests, generated documentation, and CI aligned. Terraform packages
+MUST include a `.terraformignore` appropriate for release distribution.
 
-Every material interface change keeps typed variables, outputs, README,
-Terraform examples, YAML examples, tests, and CI coverage aligned. Grouped
-object fields are optional where safe and carry inline descriptions.
+## Shared Governance Source
 
-### V. Spec Kit before material changes
-
-Module-impacting changes require a matching `spec.md`, `plan.md`, and
-`tasks.md` under `specs/<NNN>-<slug>/` before implementation. The downstream
-repository's Spec Kit package is the evidence for the module-change gate.
-
-## Repository Constraints
-
-- Use Terraform's pessimistic version constraints unless a stronger
-  repository-local requirement is documented.
-- Keep customer names, hostnames, credentials, and secret values out of
-  Terraform artifacts, examples, tests, and documentation.
-- Preserve the existing `versions.tf`, examples, tests, README, and workflow
-  conventions unless an approved change requires otherwise.
-- Shared cross-repository governance remains owned by the DasMeta constitution
-  repository and must be consulted for conflicts; this document records only
-  repository-local delivery rules.
-
-## Delivery and Review
-
-- Record upstream-provider assessment, ownership boundaries, compatibility,
-  interface impact, and validation in the active feature plan.
-- Use official provider/platform documentation for capability and deprecation
-  decisions. Do not add direct resources merely to avoid a Helm chart.
-- Run formatting, executable Terraform tests/examples, generated docs, and
-  repository checks appropriate to the changed interface before review.
-- Review is required for releases and changes that affect module contracts.
+Shared DasMeta governance is authoritative in
+[`dasmeta/meta-level-constitution`](https://github.com/dasmeta/meta-level-constitution),
+observed at `349db1f2f52185f41ef6ec4fe366752ef9bf5743`. This repository MUST
+not restate or amend shared rules locally. A conflict is escalated to that
+source rather than resolved by changing this file.
 
 ## Governance
 
-This constitution supplements, and never replaces, the DasMeta shared
-constitution. Amendments require a reviewed pull request and an update to the
-affected Spec Kit evidence. A conflict with shared governance must be surfaced
-for approval rather than resolved silently.
+This file contains repository-local constraints only. Amendments require a
+reviewed pull request and matching downstream Spec Kit evidence.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-30 | **Last Amended**: 2026-07-30
+**Version**: 1.1.0 | **Ratified**: 2026-07-30 | **Last Amended**: 2026-07-30

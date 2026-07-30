@@ -26,6 +26,24 @@ does not embed shared prerequisites, and receives its namespace/dependency
 contracts from the caller. A customer IaC root still owns the actual provider,
 state, shared module calls, and the decision to use this product composition.
 
+### Repository-layout exception
+
+The existing repository convention puts reusable runtime modules under
+`modules/`. The explicit user decision on 2026-07-30 makes this repository root
+the one supported platform composition module, with runtime modules remaining
+under `modules/`. This is an approved layout exception, not a new convention
+for the component modules.
+
+### Speckit gate status
+
+This repository has feature artifacts under `specs/`, but it is not a tracked
+Spec Kit project: `.specify/` and the generated command integration are absent.
+The initial implementation manually created specification-shaped documents and
+therefore did **not** satisfy the required command invocation chain. Do not
+claim a complete Speckit execution for this feature until the repository is
+explicitly bootstrapped and the actual `specify → plan → tasks → implement`
+workflow is run or a governance exemption is approved.
+
 ## Technical Context
 
 - **Terraform / provider constraints**: Terraform `~> 1.3`, HashiCorp Helm

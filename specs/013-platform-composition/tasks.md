@@ -32,6 +32,9 @@
   terraform-docs, and available repository checks.
 - [x] T012 Commit/push the feature branch and create a PR with validation
   evidence: https://github.com/dasmeta/terraform-any-analytics/pull/8
+- [ ] T013 Bootstrap the repository's tracked Spec Kit project and execute the
+  actual Speckit workflow for this feature, or record an approved governance
+  exemption. This remains blocked pending repository-framework direction.
 
 ## Validation Evidence
 

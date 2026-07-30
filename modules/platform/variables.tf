@@ -86,7 +86,7 @@ variable "visualization" {
   description = "Optional visualization runtime. Metabase is the default provider when this object is configured."
 
   validation {
-    condition = var.visualization == null || (
+    condition = var.visualization == null ? true : (
       contains(["metabase", "redash"], var.visualization.provider) &&
       (
         var.visualization.provider == "metabase" &&

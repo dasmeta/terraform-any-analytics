@@ -1,120 +1,168 @@
 # Implementation Plan: Analytics platform composition module
 
-**Branch**: `013-platform-composition` | **Date**: 2026-07-30 | **Spec**:
-[spec.md](spec.md)
+**Branch**: `013-platform-composition` | **Date**: 2026-07-30 | **Spec**: [spec.md](spec.md)
+
+**Input**: Feature specification from `specs/013-platform-composition/spec.md`
 
 ## Summary
 
-Make this repository's Terraform root an opinionated product-level module that
-composes the existing Airbyte, dbt, PostgREST, and one selected visualization
-runtime. It does not own shared infrastructure: callers create namespace,
-Authentik, database, storage, Redis, and Secret prerequisites through their
-respective modules and pass only the values required here.
+Make the repository root a small, reusable Terraform composition module for
+the released analytics runtime modules. A caller supplies an existing
+namespace and non-secret references to prerequisites; the module optionally
+installs Airbyte, dbt, PostgREST, and exactly one visualization provider
+(Metabase by default, Redash as an alternative). The same contract is shown in
+a neutral Terraform example and in the existing IaC YAML DSL.
 
-## Current State and Deliberate Architecture Decision
-
-`terraform-any-analytics` v1.0.0 contains five independent Helm modules and
-per-component YAML examples. `terraform-any-shared` now supplies separate
-namespace and Authentik modules. The original 001 plan explicitly avoided a
-single all-in-one module; the approved next increment changes that boundary to
-provide a strictly managed, one-entry-point platform deployment.
-
-HashiCorp's [module-composition guidance](https://developer.hashicorp.com/terraform/language/modules/develop/composition)
-strongly prefers a flat module tree and dependency inversion. This module is a
-bounded product exception: it contains one level of local runtime children,
-does not embed shared prerequisites, and receives its namespace/dependency
-contracts from the caller. A customer IaC root still owns the actual provider,
-state, shared module calls, and the decision to use this product composition.
-
-### Repository-layout exception
-
-The existing repository convention puts reusable runtime modules under
-`modules/`. The explicit user decision on 2026-07-30 makes this repository root
-the one supported platform composition module, with runtime modules remaining
-under `modules/`. This is an approved layout exception, not a new convention
-for the component modules.
-
-### Speckit gate status
-
-This repository has feature artifacts under `specs/`, but it is not a tracked
-Spec Kit project: `.specify/` and the generated command integration are absent.
-The initial implementation manually created specification-shaped documents and
-therefore did **not** satisfy the required command invocation chain. Do not
-claim a complete Speckit execution for this feature until the repository is
-explicitly bootstrapped and the actual `specify → plan → tasks → implement`
-workflow is run or a governance exemption is approved.
+This package was bootstrapped after the root implementation existed. Its tasks
+therefore reconcile and verify the delivered interface; they do not claim the
+implementation was originally developed test-first.
 
 ## Technical Context
 
-- **Terraform / provider constraints**: Terraform `~> 1.3`, HashiCorp Helm
-  `~> 3.0`, matching repository convention.
-- **Target module**: repository root with `main.tf`, `variables.tf`,
-  `outputs.tf`, `versions.tf`, root `README.md`, `examples/basic`, and `tests`.
-- **Composition baseline**: local `./modules/airbyte`, `./modules/dbt`,
-  `./modules/postgrest`, `./modules/metabase`, and `./modules/redash` modules;
-  configured Helm provider is inherited from the caller.
-- **YAML**: `examples/yaml/platform.yaml` uses the established IaC DSL; actual
-  customer configuration remains in its IaC config repository.
-- **Automation**: add the module to the existing Terraform validation matrix;
-  run format, init/validate, Terraform tests, documentation generation, and
-  available static checks.
+**Language/Version**: HCL; Terraform `~> 1.3`, verified with 1.15.8.
 
-## Module Interface
+**Primary Dependencies**: `hashicorp/helm ~> 3.0`; local runtime modules in
+`modules/airbyte`, `modules/dbt`, `modules/postgrest`, `modules/metabase`, and
+`modules/redash`.
 
-`namespace` stays a flat required input because it is the one shared external
-dependency. Each optional component is a grouped object because its fields are
-an unambiguous component-specific contract. Every grouped field will carry an
-inline comment in `variables.tf`; non-critical fields use optional attributes.
+**Storage**: N/A. The module creates no database, object store, or stateful
+data resource.
 
-| Input | Required | Purpose |
-| --- | ---: | --- |
-| `namespace` | yes | Existing namespace, normally passed from the shared namespace module output. |
-| `airbyte` | no | Airbyte external PostgreSQL and S3 Secret/reference contract. |
-| `dbt` | no | Data-product-owned dbt image, command, schedule, and Secret reference. |
-| `postgrest` | no | Existing `PGRST_*` Secret and runtime sizing contract. |
-| `visualization` | no | Provider selector (`metabase` default) and exactly one matching provider configuration. |
+**Testing**: `terraform validate`, `terraform test`, `terraform-docs`, YAML
+parse, `git diff --check`, and repository security checks where available.
 
-No generic Helm escape hatch is added. Component-specific modules remain the
-only place to add a reviewed service capability. There are currently no
-alternative ingestion, transformation, or API providers, so provider selectors
-are deliberately limited to visualization rather than inventing an abstraction
-with one implementation.
+**Target Platform**: Terraform callers managing a Kubernetes cluster with the
+Helm provider; no backend or cluster is required for validation.
 
-## Modern Capabilities and Upstream Check
+**Project Type**: Reusable Terraform module repository.
 
-| Net-new ability | Classification | Evidence / decision |
-| --- | --- | --- |
-| Terraform module composition | supported | Terraform 1.15 official guidance documents module composition and dependency inversion; local children inherit the configured Helm provider. |
-| Visualization provider choice | supported | It selects existing, non-deprecated local modules; no provider API or Helm feature is introduced. |
-| Shared prerequisite integration | supported | Dependency inversion: consume the caller-provided namespace string; do not create, discover, or embed a shared module. |
+**Performance Goals**: Plan-time composition only; no runtime performance
+claim. Each selected runtime keeps its own chart/resource configuration.
 
-Approved AWS, Azure, and Google provider-maintained module collections were
-considered and have no relevant product-level wrapper for a vendor-neutral
-Kubernetes analytics runtime suite. The direct-resource scratch template is
-not applicable because this module contains only child modules and no resources.
+**Constraints**: Helm-native workload installation; no direct Kubernetes
+resources; no secret values or generic chart escape hatch; customer-neutral
+examples; existing shared prerequisites remain external.
 
-## File Changes
+**Scale/Scope**: One optional configuration object per supported runtime plus
+one selected visualization provider. Tenant data products are intentionally
+out of scope.
 
-1. Add the root platform module, typed selection validation, and endpoint/status
-   outputs.
-2. Add neutral Terraform example and validation fixture, including an
-   executable invalid-provider test.
-3. Generate root-module documentation in the repository README while retaining
-   component-level use cases.
-4. Add a complete generic `platform.yaml` example and register the module in
-   validation CI.
-5. Update the existing 001 roadmap to mark completed components and replace
-   its no-composition statement with this approved bounded exception.
+## Research and Design Decisions
 
-## Risks and Stop Conditions
+See [research.md](research.md) for the decision record. The material choices
+are:
 
-- Do not add Authentik, namespace, database, ingress, DNS, Secret, or tenant
-  configuration to this module; those would violate the dependency boundary.
-- Do not make visualization configuration optional once its provider is
-  selected; reject invalid combinations before Helm planning.
-- If a second provider for ingestion, transformation, or API is introduced,
-  define that provider contract in a separate approved feature rather than
-  expanding this one speculatively.
-- This remains a local composition module. Publishing cross-repository source
-  pins inside it would turn runtime release selection into hidden state and is
-  out of scope.
+- Compose local, reviewed runtime modules rather than recreate their Helm
+  releases or expose raw chart values.
+- Use one nullable grouped object for each optional component, and a provider
+  selector with mutually exclusive visualization configuration.
+- Treat the repository root as the approved, bounded product composition
+  module. Runtime modules retain their existing `modules/<runtime>` layout.
+- Keep namespace, Authentik, database/user/grant, storage, Redis, Secret,
+  ingress, DNS, TLS, and data-product ownership external.
+- Use the established `source` / `version` / `variables` YAML DSL rather than
+  inventing an analytics-specific provisioning contract.
+
+## Module-Developer Assessment
+
+**Current state and scope**: The repository already contains component-scoped
+Helm wrappers. This feature adds their root composition interface, root
+documentation, examples/tests, a YAML example, and root validation coverage.
+
+**Repository convention**: Required providers remain in `versions.tf`; tests
+and examples remain under `tests/` and `examples/`. The root module is the
+user-approved exception to the prior component-only layout. It is documented
+as a composition root, not a new convention for runtime modules.
+
+**Upstream assessment**: The approved AWS, Azure, and Google provider module
+collections do not provide a vendor-neutral composition module for these
+Kubernetes analytics Helm runtimes. The local runtime modules are the intended
+opinionated wrappers; a direct-resource fallback and the scratch-template
+source are not applicable.
+
+**Wrapper preservation**: The root has a deliberately smaller interface than
+the child charts: it forwards only reviewed component configuration and
+prevents generic Helm values. Grouped component objects are unambiguous;
+non-critical fields use Terraform `optional(...)` and every grouped field has
+an inline explanation in `variables.tf`.
+
+**Modern capabilities**: `supported`. This feature uses Terraform module
+composition and the established Helm provider path; it introduces no
+deprecated provider capability and does not change the child modules'
+provider support boundary.
+
+**Governance source**: Shared rules remain sourced from the DasMeta
+constitution repository. The local Spec Kit constitution records only this
+repository's composition and delivery constraints.
+
+**CloudBrowser**: Conditional reusable-catalog work. No customer or catalog
+record is in scope and no authorized catalog mutation is proposed.
+
+**Module-change gate**: Compatible after this package contains `spec.md`,
+`plan.md`, and `tasks.md` and the generated prerequisite check succeeds.
+
+**Interface/breaking change**: There is no prior root module contract to
+preserve. Existing component submodule interfaces remain unchanged. The root
+interface is intentionally narrow and does not widen any child module.
+
+## Constitution Check
+
+**Pre-design gate: pass.**
+
+- Narrow composition: pass — root composes local modules and does not forward
+  arbitrary Helm values.
+- Ownership: pass — all shared prerequisites are caller-owned references.
+- Helm-native workloads: pass — child runtime modules own Helm releases.
+- Consumer evidence: pass — source, examples, YAML, tests, README, and CI are
+  part of the feature scope.
+- Spec Kit evidence: pass after bootstrap — active package is
+  `specs/013-platform-composition/`.
+
+**Post-design re-check: pass.** The data model and quickstart preserve these
+same boundaries; no direct Kubernetes resource, secret value, or shared
+infrastructure input was introduced.
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/013-platform-composition/
+├── spec.md
+├── plan.md
+├── research.md
+├── data-model.md
+├── quickstart.md
+├── checklists/requirements.md
+└── tasks.md
+```
+
+No external HTTP contract exists: this feature's public contract is the
+Terraform variables/outputs and the YAML DSL representation documented in
+`data-model.md`.
+
+### Source Code (repository root)
+
+```text
+main.tf                         # optional local-module composition
+variables.tf                    # typed, validated consumer interface
+outputs.tf                      # selected endpoints and release statuses
+versions.tf                     # Terraform and Helm provider constraints
+README.md                       # generated and authored module documentation
+modules/<runtime>/              # existing component Helm wrapper modules
+examples/basic/                 # full neutral Terraform consumer example
+examples/yaml/platform.yaml     # generic IaC DSL representation
+tests/                          # Terraform test fixture and validation cases
+.github/workflows/terraform-test.yaml
+```
+
+**Structure Decision**: Use the repository root as the sole product
+composition module, while retaining `modules/<runtime>` for independently
+reusable runtime wrappers. Shared infrastructure deliberately stays outside
+this repository.
+
+## Complexity Tracking
+
+| Exception | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| Root composition module | Operators need one released analytics-platform entry point and one canonical YAML source. | Requiring every consumer to orchestrate five child modules duplicates selection and validation rules. |

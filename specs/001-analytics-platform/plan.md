@@ -8,9 +8,10 @@
 Deliver a reusable, component-scoped analytics platform for existing customer
 Kubernetes environments. The delivery separates shared capabilities,
 analytics-specific capabilities, customer YAML Setups, and tenant data-product
-configuration. It deliberately avoids a monolithic Terraform state and does
-not provision cluster, network, physical database, database/user/grant, or
-secret-management foundations.
+configuration. Component modules remain independently usable; the approved
+`modules/platform` root provides a bounded standard-suite composition. Neither
+approach provisions cluster, network, physical database, database/user/grant,
+or secret-management foundations.
 
 ## Technical Context
 
@@ -18,7 +19,7 @@ secret-management foundations.
 **Providers / Upstream Baselines**: HashiCorp Helm and Kubernetes providers;
 official service charts where maintained; direct Kubernetes resources only for
 the smallest unsupported service-native runtime.  
-**Target Module Paths**: `modules/airbyte`, `modules/dbt`,
+**Target Module Paths**: `modules/platform`, `modules/airbyte`, `modules/dbt`,
 `modules/postgrest`, `modules/metabase`, and `modules/redash`.  
 **Examples / Tests in Scope**: One basic example and one validation fixture per
 module, plus a repository-level release/quality baseline.  
@@ -44,6 +45,7 @@ handoffs needed for one greenfield platform installation.
 | Governed API | `terraform-any-analytics` | `modules/postgrest` release |
 | Default visualisation | `terraform-any-analytics` | `modules/metabase` release |
 | Alternative visualisation | `terraform-any-analytics` | `modules/redash` release |
+| Standard runtime composition | `terraform-any-analytics` | `modules/platform` release |
 | Customer deployment intent | customer IaC repo | YAML Setups under `2-products/data-analytics/<environment>/` |
 | Sources, transformations, dashboards, AI use cases | tenant data-product repo | orchestrator stages `00`–`04` |
 
@@ -121,6 +123,14 @@ before code is written.
    create Terraform files in the customer IaC repository.
 4. Run the standard YAML validation → generation → Terraform Cloud VCS-plan
    workflow.
+
+### Phase 4a — Standard platform composition
+
+1. Add `modules/platform` as the bounded product-level root over the released
+   local runtime modules; it accepts caller-owned prerequisite values and does
+   not embed namespace or Authentik modules.
+2. Add a generic `platform.yaml` as the canonical standard-suite example while
+   retaining component YAML for separately managed releases.
 
 ### Phase 5 — Orchestrator and tenant handoff
 

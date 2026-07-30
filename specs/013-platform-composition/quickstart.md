@@ -29,7 +29,8 @@ The following completed successfully for the current root composition module:
 - Root, `examples/basic`, and `tests/basic` initialization/validation.
 - `asdf exec terraform test`: invalid provider, ambiguous configuration,
   missing selected-provider configuration, omitted visualization, Redash-only
-  selection, and the complete default-Metabase runtime suite (six cases).
+  selection, and the complete default-Metabase runtime suite (six cases),
+  including selected-only `release_statuses` output keys.
 - `terraform-docs` root README generation.
 - Ruby YAML parsing and `git diff --check`.
 - `checkov -d . --quiet`: passed. Checkov emitted only an external guidance
@@ -38,13 +39,14 @@ The following completed successfully for the current root composition module:
 ## Spec Kit reconciliation
 
 The prerequisite check recognizes the active feature package and its design
-documents. A read-only cross-artifact reconciliation found and corrected these
-issues: shared governance had been duplicated locally; the retrospective
-bootstrap exception and CloudBrowser evidence were incomplete; `.terraformignore`
-was absent; README ownership wording was imprecise; and test coverage did not
-prove every visualization and selected-output invariant. No public input,
-output, provider constraint, child module, chart version, or customer IaC YAML
-contract changed.
+documents. The actual Clarify → Plan → Tasks → Analyze → Implement chain is
+complete. Clarify found no critical ambiguity. Read-only analysis found and
+the Implement stage corrected one meaningful gap: the tests proved selected
+endpoints but not selected-only release-status keys. The workflow also
+corrected duplicated local governance, incomplete retrospective/CloudBrowser
+evidence, a missing `.terraformignore`, and imprecise README ownership wording.
+No public input, output, provider constraint, child module, chart version, or
+customer IaC YAML contract changed.
 
 The remaining review decision is acceptance of the documented retrospective
 Spec Kit bootstrap exception. Future module-impacting work must start with the

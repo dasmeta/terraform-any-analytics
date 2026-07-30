@@ -53,8 +53,11 @@ module boundaries, and makes review of supported configuration possible.
 - Terraform module composition is an established language feature; the design
   follows the bounded composition approach in the
   [official Terraform module composition guidance](https://developer.hashicorp.com/terraform/language/modules/develop/composition).
-- The module requires Terraform `~> 1.3` and the Helm provider `~> 3.0`, which
-  support the object optionality and child-module composition used here.
+- The module requires Terraform `~> 1.3`; its typed groups use the documented
+  [`optional(...)` object attribute mechanism](https://developer.hashicorp.com/terraform/language/expressions/type-constraints).
+- The Helm provider remains constrained to `~> 3.0`; selected child modules
+  retain their documented [`helm_release`](https://registry.terraform.io/providers/hashicorp/helm/3.0.2/docs/resources/release)
+  ownership rather than the composition root creating a release directly.
 - No deprecated provider capability, direct Kubernetes resource, or external
   cloud-provider resource is introduced by this feature.
 
@@ -62,13 +65,21 @@ module boundaries, and makes review of supported configuration possible.
 
 The composition root was implemented before Spec Kit was bootstrapped in this
 downstream module repository. This is a bounded retrospective exception, not a
-claim that the original implementation followed the required sequence. The
-current package supplies the required specification, plan, tasks, validation,
-and reconciliation evidence; review is the explicit acceptance gate.
+claim that the original implementation followed the required sequence. It
+applies only to commits `e56811c` through `f5d15c8` in PR #8, expires when that
+PR is merged or closed, and cannot be reused for later module work. The current
+package supplies the required specification, plan, tasks, validation, and
+reconciliation evidence; review is the explicit acceptance gate.
 
-CloudBrowser was read after the downstream evidence was available. Module
-records exist for Metabase (ID 171, Kubernetes) and Redash (ID 129, Self
-Managed), but not for Airbyte, dbt, or PostgREST. The catalog lacks confirmed
-repository/version/documentation relations for the root composition module.
+CloudBrowser was read after the downstream evidence was available. The read
+covered Metabase module 171, Redash module 129, matching component records,
+module versions, module-solution relations, and associated documentation
+lookups. The Metabase and Redash component records are deployment-specific,
+not reusable-platform evidence; neither has a confirmed module version,
+solution relation, or documentation relation for the root composition
+contract. No matching module records were found for Airbyte, dbt, or PostgREST.
+Component-level ownership arrays were empty, while global module-level
+ownership was not asserted because the attempted API filter is unsupported.
 No catalog write is authorized by this feature; the bounded follow-up is to
-propose those records and relations once a published platform version exists.
+propose a generic root catalog record and its relations only after a published
+platform version exists and explicit confirmation is given.

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `013-platform-composition`
 **Created**: 2026-07-30
-**Status**: Implemented; remediation evidence in progress
+**Status**: Ready for review
 **Input**: DMVP-10317 and the approved reusable platform architecture.
 
 ## Module Context

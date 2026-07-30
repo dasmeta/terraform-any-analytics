@@ -95,8 +95,8 @@ configuration repository and replace only release and prerequisite references.
 - [x] T017 Run `terraform fmt`, root/basic validation, `terraform test`,
   `terraform-docs`, YAML parsing, `git diff --check`, and available security
   checks; record results in `quickstart.md`.
-- [x] T018 Run Spec Kit feature, plan, task, and prerequisite scripts for
-  `specs/013-platform-composition/`.
+- [x] T018 Bootstrap the Spec Kit feature package and run prerequisite checks
+  for `specs/013-platform-composition/`.
 
 ## Phase 7: Workflow remediation
 
@@ -112,12 +112,32 @@ post-bootstrap module-developer audit without changing the public contract.
 - [x] T022 Add Terraform release-package exclusions in `.terraformignore`.
 - [x] T023 Correct composition-root ownership wording in `README.md`.
 - [x] T024 Add default-provider, matching-configuration, selected-runtime, and
-  selected-only endpoint regression assertions in `tests/invalid_inputs.tftest.hcl`.
+  selected-only endpoint/status regression assertions in
+  `tests/invalid_inputs.tftest.hcl`.
 - [x] T025 Run the Spec Kit cross-artifact reconciliation and record its review
   findings in `specs/013-platform-composition/quickstart.md`.
 - [x] T026 Run formatting, Terraform validation/tests, Terraform docs, YAML
   parsing, packaging checks, and diff checks; update
   `specs/013-platform-composition/quickstart.md`.
+
+## Phase 8: Complete the Spec Kit chain
+
+**Purpose**: Execute the required downstream workflow after the historical
+implementation was reconciled, without changing the public module contract.
+
+- [x] T027 Run the clarification scan against
+  `specs/013-platform-composition/spec.md` and record that no critical
+  ambiguity requires a spec edit.
+- [x] T028 Update the technical plan, research evidence, and agent context in
+  `specs/013-platform-composition/{plan,research}.md` and `AGENTS.md`.
+- [x] T029 Regenerate the executable story-oriented plan in
+  `specs/013-platform-composition/tasks.md`, including dependency and parallel
+  execution guidance.
+- [x] T030 Run the read-only cross-artifact analysis over
+  `specs/013-platform-composition/{spec,plan,tasks}.md` and resolve any
+  blocking findings before implementation.
+- [x] T031 Execute the remaining implementation validation and mark completed
+  work in `specs/013-platform-composition/{spec,tasks,quickstart}.md`.
 
 ## Dependencies and execution order
 
@@ -127,10 +147,56 @@ post-bootstrap module-developer audit without changing the public contract.
   testable thereafter.
 - US3 depends on the accepted public root contract, not on a deployed cluster.
 - Polish verifies all completed stories and prepares review evidence.
+- The final workflow phase depends on the completed story tasks; analysis is
+  read-only and implementation follows only when it has no blocking finding.
+
+## Requirement coverage
+
+| Requirement | Covered by | Evidence |
+|-------------|------------|----------|
+| FR-001, FR-002, FR-003 | T003–T008 | Root composition and basic fixture |
+| FR-004 | T009–T011 | Visualization selection and validation cases |
+| FR-005 | T005, T011 | Selected-only output shaping and regression test |
+| FR-006 | T004, T016 | Typed inputs and documented ownership boundary |
+| FR-007 | T012–T018, T026 | Examples, docs, CI matrix, and validation record |
+
+## Parallel opportunities
+
+- **US1**: After T006 establishes module wiring, T007
+  (`examples/basic/main.tf`) and T008 (`tests/basic/*`) can proceed in
+  parallel because they modify different fixtures.
+- **US2**: T009 and T010 share root-module files and remain sequential; T011
+  follows both and independently modifies `tests/invalid_inputs.tftest.hcl`.
+- **US3**: T012 (`examples/yaml/platform.yaml`) and the README portion of T013
+  can proceed in parallel after the root public contract is accepted; the YAML
+  README is finalized after the example is present.
+
+## Parallel examples
+
+### User Story 1
+
+```text
+T007: Add the consumer fixture in examples/basic/main.tf
+T008: Add the validation fixture in tests/basic/main.tf and tests/basic/providers.tf
+```
+
+### User Story 2
+
+No safe parallel implementation task exists: validation and selection both
+shape the root contract and T011 depends on them.
+
+### User Story 3
+
+```text
+T012: Add examples/yaml/platform.yaml
+T013: Draft the root README consumption guidance
+```
 
 ## Implementation strategy
 
 The MVP is US1 plus US2: a caller can compose the selected runtime suite and
 get a safe visualization choice. US3 then makes that same contract consumable
 by the existing IaC DSL. No step adds shared infrastructure or customer data
-product configuration.
+product configuration. The final workflow phase confirms the retrospective
+evidence instead of treating bootstrap scripts as a replacement for the
+Clarify → Plan → Tasks → Analyze → Implement chain.

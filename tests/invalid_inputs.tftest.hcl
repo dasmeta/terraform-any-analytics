@@ -153,4 +153,14 @@ run "selects_default_metabase_and_selected_runtime_outputs" {
     }
     error_message = "Service endpoints must include only selected long-running runtime services."
   }
+
+  assert {
+    condition = toset(keys(output.release_statuses)) == toset([
+      "airbyte",
+      "dbt",
+      "metabase",
+      "postgrest",
+    ])
+    error_message = "Release statuses must include only selected runtime releases."
+  }
 }

@@ -16,8 +16,8 @@
 
 - [x] T005 Add a complete neutral Terraform basic example and validation
   fixture for a Metabase-selected full platform.
-- [x] T006 Add executable Terraform tests for invalid/ambiguous visualization
-  choices and composition precedence.
+- [x] T006 Add executable Terraform tests for invalid, ambiguous, and omitted
+  visualization choices and composition precedence.
 - [x] T007 Generate `modules/platform/README.md` with ownership boundaries,
   module usage, selection rules, and downstream integration notes.
 - [x] T008 Add `examples/yaml/platform.yaml` and update the YAML examples guide

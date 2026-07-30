@@ -36,6 +36,19 @@ run "rejects_ambiguous_visualization_configuration" {
   ]
 }
 
+run "allows_omitted_visualization" {
+  command = plan
+
+  variables {
+    namespace = "test-analytics"
+  }
+
+  assert {
+    condition     = length(module.metabase) == 0 && length(module.redash) == 0
+    error_message = "Omitting visualization must deploy neither visualization provider."
+  }
+}
+
 run "selects_redash_without_metabase" {
   command = plan
 

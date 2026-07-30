@@ -18,6 +18,7 @@ jobs:
           - modules/postgrest
           - modules/metabase
           - modules/redash
+          - modules/platform
     steps:
       - uses: actions/checkout@v4
 

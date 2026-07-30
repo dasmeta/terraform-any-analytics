@@ -13,10 +13,10 @@
 Terraform modules that install selected analytics-platform runtimes into an
 existing Kubernetes namespace using version-pinned Helm charts.
 
-**Current delivery state (verified 2026-07-30):** this repository has no
-published GitHub release. The YAML examples contain a
-`<released-module-version>` placeholder and cannot be applied unchanged until a
-module release is published.
+**Current delivery state (verified 2026-07-30):** component modules were
+released as `v1.0.0`. The platform composition module introduced after that
+release must be pinned to the next published version before its YAML example is
+applied.
 
 **Compatibility:** Terraform `~> 1.3` and the HashiCorp Helm provider `~> 3.0`.
 Each module requires an existing Kubernetes namespace and a configured Helm
@@ -24,21 +24,23 @@ provider context.
 
 ## Which analytics runtime should I use?
 
-Choose and compose only the modules required by the platform. This repository
-does not provide a single all-in-one platform module.
+Use the platform module for the standard, one-entry-point runtime suite. Use
+individual component modules where a component must retain independent state or
+release cadence.
 
 | Module | Use it for | Runtime dependency owned outside this module |
 | --- | --- | --- |
+| [Platform](./modules/platform/) | opinionated composition of selected analytics runtimes | namespace, Authentik, databases/users/grants, buckets, Redis, Secrets, ingress, DNS, and tenant content |
 | [Airbyte](./modules/airbyte/) | ingesting data with the official Airbyte Helm chart | PostgreSQL, S3 bucket, and database/storage Secrets |
 | [dbt](./modules/dbt/) | scheduling a data-product-owned dbt image | configuration Secret and the image's dbt project and warehouse access |
 | [PostgREST](./modules/postgrest/) | exposing a prepared PostgreSQL schema as an internal API | database roles, grants, API schema/views/functions, and `PGRST_*` Secret |
 | [Metabase](./modules/metabase/) | the default visualization provider | PostgreSQL application database, user/grants, and connection Secret |
 | [Redash](./modules/redash/) | a fallback visualization provider | PostgreSQL, Redis, and configuration Secret |
 
-Metabase and Redash are alternatives for visualization; they are not both
-required. Airbyte and dbt do not configure source connections, transformations,
-models, mappings, or schedules beyond the dbt command and CronJob schedule
-provided to the module.
+Metabase and Redash are alternatives for visualization; the platform module
+enforces one selected provider. Airbyte and dbt do not configure source
+connections, transformations, models, mappings, or schedules beyond the dbt
+command and CronJob schedule provided to the module.
 
 ## What does this repository manage?
 
@@ -67,7 +69,7 @@ without a Kubernetes cluster or backend:
 ```sh
 terraform fmt -check -recursive
 
-for module in modules/airbyte modules/dbt modules/postgrest modules/metabase modules/redash; do
+for module in modules/airbyte modules/dbt modules/postgrest modules/metabase modules/redash modules/platform; do
   terraform -chdir="$module/tests/basic" init -backend=false
   terraform -chdir="$module/tests/basic" validate
 done
@@ -78,19 +80,21 @@ steps with Terraform 1.15.8. Validation checks module syntax and provider
 contracts; it does not install a chart or prove that caller-managed runtime
 dependencies exist.
 
-For a component-specific Terraform configuration, start with its
-[basic example](./modules/airbyte/examples/basic/) and read that module's
-README before applying it. The examples expect caller-managed prerequisites and
-do not contain production credentials.
+For the standard suite, start with the [platform basic
+example](./modules/platform/examples/basic/) and read its README. For a
+component-specific configuration, start with its [basic
+example](./modules/airbyte/examples/basic/). All examples expect
+caller-managed prerequisites and do not contain production credentials.
 
 ## Can I use the YAML examples in a customer IaC repository?
 
-Yes, as reference configurations. The
-[YAML IaC DSL examples](./examples/yaml/) use the established DasMeta
-`source`, `version`, and `variables` shape. Copy only the selected component
-root to the customer's IaC configuration repository, replace
-`<released-module-version>` after a release is available, and retain the
-customer repository's provider, remote-state, and composition configuration.
+Yes, as reference configurations. The [platform YAML
+example](./examples/yaml/platform.yaml) is the canonical one-entry-point
+configuration and uses the established DasMeta `source`, `version`, and
+`variables` shape. Copy it to the customer's IaC configuration repository,
+replace `<released-platform-version>` after release, and retain the customer
+repository's provider, remote-state, and linked-Setup configuration. Individual
+component examples remain available for intentionally separate states.
 
 The YAML files are not Kubernetes manifests and do not replace the Terraform
 examples. They deliberately reference existing Secrets by name and use neutral
@@ -116,7 +120,8 @@ Use the owning platform layer or the native application for those concerns.
 | Question | Canonical location |
 | --- | --- |
 | Repository purpose, module selection, boundaries, and validated entry point | this README |
-| Component inputs, outputs, chart versions, operational notes, and service names | the relevant [module README](./modules/) |
+| Standard suite interface and selected component endpoints | [platform module README](./modules/platform/) |
+| Component inputs, outputs, chart versions, operational notes, and service names | the relevant [component README](./modules/) |
 | Terraform configuration shape | each module's [basic example](./modules/airbyte/examples/basic/) |
 | Customer IaC DSL shape | [YAML examples](./examples/yaml/) |
 | Executable validation contract | [basic tests](./modules/) and [Terraform validation workflow](./.github/workflows/terraform-test.yaml) |

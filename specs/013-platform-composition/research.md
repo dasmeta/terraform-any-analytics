@@ -57,3 +57,18 @@ module boundaries, and makes review of supported configuration possible.
   support the object optionality and child-module composition used here.
 - No deprecated provider capability, direct Kubernetes resource, or external
   cloud-provider resource is introduced by this feature.
+
+## Retrospective workflow and catalog evidence
+
+The composition root was implemented before Spec Kit was bootstrapped in this
+downstream module repository. This is a bounded retrospective exception, not a
+claim that the original implementation followed the required sequence. The
+current package supplies the required specification, plan, tasks, validation,
+and reconciliation evidence; review is the explicit acceptance gate.
+
+CloudBrowser was read after the downstream evidence was available. Module
+records exist for Metabase (ID 171, Kubernetes) and Redash (ID 129, Self
+Managed), but not for Airbyte, dbt, or PostgREST. The catalog lacks confirmed
+repository/version/documentation relations for the root composition module.
+No catalog write is authorized by this feature; the bounded follow-up is to
+propose those records and relations once a published platform version exists.

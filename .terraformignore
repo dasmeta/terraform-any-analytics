@@ -1,0 +1,14 @@
+# Local, CI, and specification assets are not part of a released module package.
+.git/
+.github/
+.agents/
+.specify/
+specs/
+tests/
+
+# Never publish local Terraform state, provider cache, or variable values.
+.terraform/
+.terraform.lock.hcl
+*.tfstate*
+*.tfvars
+*.tfvars.json

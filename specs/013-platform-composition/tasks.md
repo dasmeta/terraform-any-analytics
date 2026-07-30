@@ -30,8 +30,8 @@
   approved composition module and completed component releases.
 - [x] T011 Run format, basic fixture init/validate, Terraform tests,
   terraform-docs, and available repository checks.
-- [ ] T012 Commit/push the feature branch and create a PR with validation
-  evidence.
+- [x] T012 Commit/push the feature branch and create a PR with validation
+  evidence: https://github.com/dasmeta/terraform-any-analytics/pull/8
 
 ## Validation Evidence
 

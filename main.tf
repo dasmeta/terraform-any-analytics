@@ -1,8 +1,3 @@
-locals {
-  metabase_enabled = try(var.visualization.provider == "metabase", false)
-  redash_enabled   = try(var.visualization.provider == "redash", false)
-}
-
 module "airbyte" {
   count  = var.airbyte == null ? 0 : 1
   source = "./modules/airbyte"
